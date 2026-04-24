@@ -123,7 +123,7 @@ const modules = [
 
 const CreatePlan = ({ isOpen, onClose, onSave, initialData }: CreatePlanProps) => {
   const isEditing = !!initialData;
-  
+
   const [formData, setFormData] = useState({
     planName: initialData?.name || "",
     planCode: initialData?.code || "",
@@ -131,6 +131,10 @@ const CreatePlan = ({ isOpen, onClose, onSave, initialData }: CreatePlanProps) =
     tag: initialData?.badge || "None",
     monthlyPrice: initialData?.monthlyPrice || 0,
     annualPrice: initialData?.annualPrice || 0,
+    discountPercent: initialData?.discountPercent ?? 0,
+    gstPercent: initialData?.gstPercent ?? 18,
+    annualDiscountPercent: initialData?.annualDiscountPercent ?? 0,
+    freeMonths: initialData?.freeMonths ?? 2,
     billingType: "Both",
     selectedModules: initialData?.modules || ([] as string[]),
     moduleNames: initialData?.moduleNames || ({} as { [key: string]: string }),
@@ -146,6 +150,10 @@ const CreatePlan = ({ isOpen, onClose, onSave, initialData }: CreatePlanProps) =
         tag: initialData?.badge || "None",
         monthlyPrice: initialData?.monthlyPrice || 0,
         annualPrice: initialData?.annualPrice || 0,
+        discountPercent: initialData?.discountPercent ?? 0,
+        gstPercent: initialData?.gstPercent ?? 18,
+        annualDiscountPercent: initialData?.annualDiscountPercent ?? 0,
+        freeMonths: initialData?.freeMonths ?? 2,
         billingType: "Both",
         selectedModules: initialData?.modules || ([] as string[]),
         moduleNames: initialData?.moduleNames || ({} as { [key: string]: string }),
@@ -193,6 +201,10 @@ const CreatePlan = ({ isOpen, onClose, onSave, initialData }: CreatePlanProps) =
       tag: "None",
       monthlyPrice: 0,
       annualPrice: 0,
+      discountPercent: 0,
+      gstPercent: 18,
+      annualDiscountPercent: 0,
+      freeMonths: 2,
       billingType: "Both",
       selectedModules: [],
       moduleNames: {},
@@ -272,43 +284,193 @@ const CreatePlan = ({ isOpen, onClose, onSave, initialData }: CreatePlanProps) =
 
           {/* Pricing */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Pricing</h3>
+            <h3 className="text-lg font-semibold mb-1">Pricing</h3>
+            <p className="text-xs text-muted-foreground mb-4">Set base prices, discount, GST and free months. Annual price auto-calculates, or enter manually.</p>
             <div className="space-y-4">
+
+              {/* Monthly & Annual base prices */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="monthlyPrice">Monthly Price (₹)</Label>
+                  <Label htmlFor="monthlyPrice">Base Monthly Price (₹) *</Label>
                   <Input
                     id="monthlyPrice"
                     type="number"
-                    placeholder="0"
-                    value={formData.monthlyPrice}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        monthlyPrice: parseInt(e.target.value) || 0,
-                      })
-                    }
+                    placeholder="e.g. 8999"
+                    value={formData.monthlyPrice || ""}
+                    onChange={(e) => {
+                      const mp = parseInt(e.target.value) || 0;
+                      const fm = formData.freeMonths ?? 0;
+                      // Auto-calculate annual as 12 months
+                      const autoAnnual = mp > 0 ? mp * 12 : formData.annualPrice;
+                      const annualSaving = mp > 0 && fm > 0 ? Math.round((fm / 12) * 100) : formData.annualDiscountPercent;
+                      setFormData({ ...formData, monthlyPrice: mp, annualPrice: autoAnnual, annualDiscountPercent: annualSaving });
+                    }}
                     className="mt-1"
                   />
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Price before discount & GST</p>
                 </div>
                 <div>
-                  <Label htmlFor="annualPrice">Annual Price (₹)</Label>
+                  <Label htmlFor="annualPrice">Base Annual Price (₹)</Label>
                   <Input
                     id="annualPrice"
                     type="number"
-                    placeholder="0"
-                    value={formData.annualPrice}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        annualPrice: parseInt(e.target.value) || 0,
-                      })
-                    }
+                    placeholder="Auto or enter manually"
+                    value={formData.annualPrice || ""}
+                    onChange={(e) => {
+                      const ap = parseInt(e.target.value) || 0;
+                      // When user enters annual manually, compute saving %
+                      const saving = formData.monthlyPrice > 0
+                        ? Math.round(((formData.monthlyPrice * 12 - ap) / (formData.monthlyPrice * 12)) * 100)
+                        : 0;
+                      setFormData({ ...formData, annualPrice: ap, annualDiscountPercent: saving });
+                    }}
                     className="mt-1"
                   />
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Auto-fills when Free Months is set</p>
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground">At least one price is required *</p>
+
+              {/* Discount, GST, Free Months */}
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <Label htmlFor="discountPercent">Offer Discount (%)</Label>
+                  <Input
+                    id="discountPercent"
+                    type="number"
+                    min={0} max={100}
+                    placeholder="e.g. 10"
+                    value={formData.discountPercent || ""}
+                    onChange={(e) => setFormData({ ...formData, discountPercent: parseFloat(e.target.value) || 0 })}
+                    className="mt-1"
+                  />
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Applied to both plans</p>
+                </div>
+                <div>
+                  <Label htmlFor="gstPercent">GST (%)</Label>
+                  <Input
+                    id="gstPercent"
+                    type="number"
+                    min={0} max={100}
+                    placeholder="e.g. 18"
+                    value={formData.gstPercent || ""}
+                    onChange={(e) => setFormData({ ...formData, gstPercent: parseFloat(e.target.value) || 0 })}
+                    className="mt-1"
+                  />
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Applied after discount</p>
+                </div>
+                <div>
+                  <Label htmlFor="freeMonths">Free Months (Annual)</Label>
+                  <Input
+                    id="freeMonths"
+                    type="number"
+                    min={0} max={6}
+                    placeholder="e.g. 2"
+                    value={formData.freeMonths ?? ""}
+                    onChange={(e) => {
+                      const fm = parseInt(e.target.value) || 0;
+                      const mp = formData.monthlyPrice;
+                      const autoAnnual = mp > 0 ? mp * 12 : formData.annualPrice;
+                      const annualSaving = mp > 0 ? Math.round((fm / 12) * 100) : 0;
+                      setFormData({ ...formData, freeMonths: fm, annualPrice: autoAnnual, annualDiscountPercent: annualSaving });
+                    }}
+                    className="mt-1"
+                  />
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Auto-computes Annual Price</p>
+                </div>
+              </div>
+
+              {/* Live Dual Breakdown */}
+              {(formData.monthlyPrice > 0 || formData.annualPrice > 0) && (() => {
+                const disc = formData.discountPercent ?? 0;
+                const gst = formData.gstPercent ?? 0;
+                const mp = formData.monthlyPrice;
+                const ap = formData.annualPrice;
+                const fm = formData.freeMonths ?? 0;
+
+                // Monthly calculations
+                const mDisc = Math.round(mp * disc / 100);
+                const mAfterDisc = mp - mDisc;
+                const mGst = Math.round(mAfterDisc * gst / 100);
+                const mPayable = mAfterDisc + mGst;
+
+                // Annual calculations
+                const baseAnnual = ap;
+                const fmSavings = mp * fm;
+                const aAfterFm = baseAnnual - fmSavings;
+                const aDisc = Math.round(aAfterFm * disc / 100);
+                const aAfterDisc = aAfterFm - aDisc;
+                const aGst = Math.round(aAfterDisc * gst / 100);
+                const aPayable = aAfterDisc + aGst;
+                const annualSave = fmSavings + aDisc;
+
+                return (
+                  <div className="rounded-lg border bg-muted/20 overflow-hidden text-sm">
+                    <div className="grid grid-cols-3 bg-muted/50 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                      <div className="px-3 py-2">📊 Breakdown</div>
+                      <div className="px-3 py-2 text-center border-l">Monthly</div>
+                      <div className="px-3 py-2 text-center border-l">Annual</div>
+                    </div>
+
+                    {/* Base price */}
+                    <div className="grid grid-cols-3 border-t text-xs">
+                      <div className="px-3 py-2 text-muted-foreground">Base Price</div>
+                      <div className="px-3 py-2 text-center border-l font-medium">₹{mp.toLocaleString()}</div>
+                      <div className="px-3 py-2 text-center border-l font-medium">₹{ap.toLocaleString()}</div>
+                    </div>
+
+                    {/* Discount & Free Months */}
+                    {(disc > 0 || fm > 0) && (
+                      <>
+                        {fm > 0 && (
+                          <div className="grid grid-cols-3 border-t bg-green-50/50 text-xs text-green-700">
+                            <div className="px-3 py-2 font-medium">Free Months ({fm})</div>
+                            <div className="px-3 py-2 text-center border-l">—</div>
+                            <div className="px-3 py-2 text-center border-l font-bold">− ₹{fmSavings.toLocaleString()}</div>
+                          </div>
+                        )}
+                        {disc > 0 && (
+                          <div className="grid grid-cols-3 border-t bg-red-50/50 text-xs">
+                            <div className="px-3 py-2 text-muted-foreground">Offer Discount ({disc}%)</div>
+                            <div className="px-3 py-2 text-center border-l text-red-500 font-medium">− ₹{mDisc.toLocaleString()}</div>
+                            <div className="px-3 py-2 text-center border-l text-red-500 font-medium">− ₹{aDisc.toLocaleString()}</div>
+                          </div>
+                        )}
+                        <div className="grid grid-cols-3 border-t text-xs">
+                          <div className="px-3 py-2 text-muted-foreground">After Discount</div>
+                          <div className="px-3 py-2 text-center border-l font-medium">₹{mAfterDisc.toLocaleString()}</div>
+                          <div className="px-3 py-2 text-center border-l font-medium">₹{aAfterDisc.toLocaleString()}</div>
+                        </div>
+                      </>
+                    )}
+
+                    {/* GST */}
+                    {gst > 0 && (
+                      <div className="grid grid-cols-3 border-t bg-orange-50/50 text-xs">
+                        <div className="px-3 py-2 text-muted-foreground">GST ({gst}%)</div>
+                        <div className="px-3 py-2 text-center border-l text-orange-500 font-medium">+ ₹{mGst.toLocaleString()}</div>
+                        <div className="px-3 py-2 text-center border-l text-orange-500 font-medium">+ ₹{aGst.toLocaleString()}</div>
+                      </div>
+                    )}
+
+                    {/* Final payable - bold */}
+                    <div className="grid grid-cols-3 border-t bg-foreground/5 font-bold text-xs">
+                      <div className="px-3 py-2.5">✅ Final Payable</div>
+                      <div className="px-3 py-2.5 text-center border-l text-primary">₹{mPayable.toLocaleString()}/mo</div>
+                      <div className="px-3 py-2.5 text-center border-l text-primary">₹{aPayable.toLocaleString()}/yr</div>
+                    </div>
+
+                    {/* Free months savings row */}
+                    {fm > 0 && annualSave > 0 && (
+                      <div className="grid grid-cols-3 border-t bg-green-50 text-xs">
+                        <div className="px-3 py-2 text-green-700 font-medium">🎁 {fm} months FREE</div>
+                        <div className="px-3 py-2 text-center border-l text-muted-foreground">—</div>
+                        <div className="px-3 py-2 text-center border-l text-green-700 font-bold">Save ₹{annualSave.toLocaleString()}</div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+
               <div>
                 <Label htmlFor="billingType">Billing Cycle *</Label>
                 <Select value={formData.billingType} onValueChange={(value) => setFormData({ ...formData, billingType: value })}>
@@ -375,33 +537,35 @@ const CreatePlan = ({ isOpen, onClose, onSave, initialData }: CreatePlanProps) =
           </div>
 
           {/* Custom Module Names */}
-          {formData.selectedModules.length > 0 && (
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Customize Module Names</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Set custom display names for the modules you've selected (optional)
-              </p>
-              <div className="space-y-3 max-h-64 overflow-y-auto p-3 bg-muted/30 rounded-lg">
-                {formData.selectedModules.map((moduleName) => (
-                  <div key={moduleName} className="space-y-2">
-                    <Label htmlFor={`custom-${moduleName}`} className="text-sm">
-                      {moduleName}
-                    </Label>
-                    <Input
-                      id={`custom-${moduleName}`}
-                      placeholder={`Enter custom name for ${moduleName}...`}
-                      value={formData.moduleNames[moduleName] || ""}
-                      onChange={(e) =>
-                        handleModuleNameChange(moduleName, e.target.value)
-                      }
-                      className="text-sm"
-                    />
-                  </div>
-                ))}
+          {
+            formData.selectedModules.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Customize Module Names</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Set custom display names for the modules you've selected (optional)
+                </p>
+                <div className="space-y-3 max-h-64 overflow-y-auto p-3 bg-muted/30 rounded-lg">
+                  {formData.selectedModules.map((moduleName) => (
+                    <div key={moduleName} className="space-y-2">
+                      <Label htmlFor={`custom-${moduleName}`} className="text-sm">
+                        {moduleName}
+                      </Label>
+                      <Input
+                        id={`custom-${moduleName}`}
+                        placeholder={`Enter custom name for ${moduleName}...`}
+                        value={formData.moduleNames[moduleName] || ""}
+                        onChange={(e) =>
+                          handleModuleNameChange(moduleName, e.target.value)
+                        }
+                        className="text-sm"
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            )
+          }
+        </div >
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
@@ -412,8 +576,8 @@ const CreatePlan = ({ isOpen, onClose, onSave, initialData }: CreatePlanProps) =
             {isEditing ? "Update Plan" : "Create Plan"}
           </Button>
         </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      </DialogContent >
+    </Dialog >
   );
 };
 

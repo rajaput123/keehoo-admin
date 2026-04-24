@@ -18,10 +18,14 @@ interface PricingPlan {
   code: string;
   monthlyPrice: number;
   annualPrice: number;
+  discountPercent?: number;       // e.g. 10 means 10% offer discount
+  gstPercent?: number;            // e.g. 18 means 18% GST
+  annualDiscountPercent?: number; // e.g. 17 means 17% saving on annual plan
+  freeMonths?: number;            // e.g. 2 means "2 months free" on annual
   description?: string;
   modulesCount: number;
   modules: string[];
-  moduleNames?: { [key: string]: string }; // Custom display names for modules
+  moduleNames?: { [key: string]: string };
   status: "active" | "inactive" | "draft";
   badge?: "Recommended" | "Most Popular";
 }
@@ -31,8 +35,13 @@ const samplePlans: PricingPlan[] = [
     id: "1",
     name: "Parambh",
     code: "T1",
+    // Monthly: ₹1,999 | Annual: ₹1,999 × 10 = ₹19,990 (2 months free)
     monthlyPrice: 1999,
     annualPrice: 19990,
+    discountPercent: 10,
+    gstPercent: 18,
+    freeMonths: 2,
+    annualDiscountPercent: 17,
     description: "Perfect for small temples getting started with digital management",
     modulesCount: 3,
     modules: ["Temple", "Seva", "Donations"],
@@ -42,8 +51,13 @@ const samplePlans: PricingPlan[] = [
     id: "2",
     name: "Seva",
     code: "T2",
+    // Monthly: ₹3,999 | Annual: ₹3,999 × 10 = ₹39,990 (2 months free)
     monthlyPrice: 3999,
     annualPrice: 39990,
+    discountPercent: 10,
+    gstPercent: 18,
+    freeMonths: 2,
+    annualDiscountPercent: 17,
     description: "Great for medium temples with expanded operational needs",
     modulesCount: 5,
     modules: ["Temple", "Seva", "Donations", "Payments", "Events"],
@@ -53,8 +67,13 @@ const samplePlans: PricingPlan[] = [
     id: "3",
     name: "Shradha",
     code: "T3",
+    // Monthly: ₹5,999 | Annual: ₹5,999 × 10 = ₹59,990 (2 months free)
     monthlyPrice: 5999,
     annualPrice: 59990,
+    discountPercent: 10,
+    gstPercent: 18,
+    freeMonths: 2,
+    annualDiscountPercent: 17,
     description: "Our recommended plan for most established temples",
     modulesCount: 7,
     modules: ["Temple", "Seva", "Donations", "Events", "Staff", "PR", "Payments"],
@@ -65,8 +84,13 @@ const samplePlans: PricingPlan[] = [
     id: "4",
     name: "Sampoorna",
     code: "T4",
+    // Monthly: ₹7,999 | Annual: ₹7,999 × 10 = ₹79,990 (2 months free)
     monthlyPrice: 7999,
     annualPrice: 79990,
+    discountPercent: 10,
+    gstPercent: 18,
+    freeMonths: 2,
+    annualDiscountPercent: 17,
     description: "Comprehensive solution for large temples with complex operations",
     modulesCount: 9,
     modules: ["Temple", "Seva", "Donations", "Events", "Staff", "PR", "Payments", "Inventory", "Knowledge"],
@@ -77,8 +101,13 @@ const samplePlans: PricingPlan[] = [
     id: "5",
     name: "Sanskriti",
     code: "T5",
+    // Monthly: ₹9,999 | Annual: ₹9,999 × 10 = ₹99,990 (2 months free)
     monthlyPrice: 9999,
     annualPrice: 99990,
+    discountPercent: 10,
+    gstPercent: 18,
+    freeMonths: 2,
+    annualDiscountPercent: 17,
     description: "Premium plan with all features and unlimited access",
     modulesCount: 10,
     modules: ["Temple", "Seva", "Donations", "Events", "Staff", "PR", "Payments", "Inventory", "Knowledge", "Prasadam"],
@@ -221,17 +250,21 @@ const Overview = () => {
       setPlans(plans.map((p) =>
         p.id === editingPlan.id
           ? {
-              ...p,
-              name: planData.planName,
-              code: planData.planCode,
-              monthlyPrice: planData.monthlyPrice,
-              annualPrice: planData.annualPrice,
-              description: planData.description,
-              modulesCount: planData.selectedModules.length,
-              modules: planData.selectedModules,
-              moduleNames: planData.moduleNames || {},
-              badge: planData.tag === "None" ? undefined : planData.tag,
-            }
+            ...p,
+            name: planData.planName,
+            code: planData.planCode,
+            monthlyPrice: planData.monthlyPrice,
+            annualPrice: planData.annualPrice,
+            discountPercent: planData.discountPercent ?? 0,
+            gstPercent: planData.gstPercent ?? 18,
+            annualDiscountPercent: planData.annualDiscountPercent ?? 0,
+            freeMonths: planData.freeMonths ?? 0,
+            description: planData.description,
+            modulesCount: planData.selectedModules.length,
+            modules: planData.selectedModules,
+            moduleNames: planData.moduleNames || {},
+            badge: planData.tag === "None" ? undefined : planData.tag,
+          }
           : p
       ));
       setEditingPlan(null);
@@ -243,10 +276,14 @@ const Overview = () => {
         code: planData.planCode,
         monthlyPrice: planData.monthlyPrice,
         annualPrice: planData.annualPrice,
+        discountPercent: planData.discountPercent ?? 0,
+        gstPercent: planData.gstPercent ?? 18,
+        annualDiscountPercent: planData.annualDiscountPercent ?? 0,
+        freeMonths: planData.freeMonths ?? 0,
         description: planData.description,
         modulesCount: planData.selectedModules.length,
         modules: planData.selectedModules,
-        moduleNames: planData.moduleNames || {}, // Store custom module names
+        moduleNames: planData.moduleNames || {},
         status: "active",
         badge: planData.tag === "None" ? undefined : planData.tag,
       };
@@ -279,7 +316,7 @@ const Overview = () => {
             <p className="text-sm text-muted-foreground mt-1">
               Create and manage pricing plans for your platform
             </p>
-          </div>onClick={() => setIsCreateModalOpen(true)} 
+          </div>
           <div className="flex gap-2">
             <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
               <button
@@ -348,12 +385,59 @@ const Overview = () => {
                   </DropdownMenu>
                 </div>
 
-                <div className="mb-4">
+                <div className="mb-4 space-y-1">
+                  {/* Base price */}
                   <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-bold">₹{plan.monthlyPrice.toLocaleString()}</span>
+                    <span className="text-2xl font-bold">₹{plan.monthlyPrice.toLocaleString()}</span>
                     <span className="text-sm text-muted-foreground">/mo</span>
                   </div>
-                  <p className="text-xs text-muted-foreground">₹{plan.annualPrice.toLocaleString()}/yr</p>
+                  {/* Discount + GST breakdown */}
+                  {(plan.discountPercent != null || plan.gstPercent != null) && (() => {
+                    const disc = plan.discountPercent ?? 0;
+                    const afterDiscount = plan.monthlyPrice - Math.round(plan.monthlyPrice * disc / 100);
+                    const gst = plan.gstPercent ?? 0;
+                    const gstAmt = Math.round(afterDiscount * gst / 100);
+                    const payable = afterDiscount + gstAmt;
+                    return (
+                      <div className="text-xs space-y-0.5 text-muted-foreground">
+                        {disc > 0 && (
+                          <div className="flex justify-between">
+                            <span>Offer Discount ({disc}%)</span>
+                            <span className="text-red-500 font-medium">-₹{(plan.monthlyPrice - afterDiscount).toLocaleString()}</span>
+                          </div>
+                        )}
+                        {gst > 0 && (
+                          <div className="flex justify-between">
+                            <span>GST ({gst}%)</span>
+                            <span>+₹{gstAmt.toLocaleString()}</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between font-semibold text-foreground border-t pt-0.5 mt-0.5">
+                          <span>Payable/mo</span>
+                          <span>₹{payable.toLocaleString()}</span>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                  {/* Annual price + free months */}
+                  <div className="mt-3 pt-2 border-t border-dashed border-border">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-xs text-muted-foreground">Annual Plan: </span>
+                        <span className="text-sm font-bold text-foreground">₹{plan.annualPrice.toLocaleString()}/yr</span>
+                      </div>
+                      {plan.freeMonths != null && plan.freeMonths > 0 && (
+                        <span className="text-[10px] bg-green-500 text-white px-2 py-0.5 rounded-full font-bold tracking-wide">
+                          🎁 {plan.freeMonths} month{plan.freeMonths > 1 ? "s" : ""} FREE
+                        </span>
+                      )}
+                    </div>
+                    {plan.freeMonths != null && plan.freeMonths > 0 && (
+                      <p className="text-[10px] text-green-600 font-medium mt-0.5">
+                        Save ₹{(plan.monthlyPrice * plan.freeMonths).toLocaleString()} vs monthly billing
+                      </p>
+                    )}
+                  </div>
                 </div>
 
                 <div className="mb-4 p-3 bg-background rounded-lg">

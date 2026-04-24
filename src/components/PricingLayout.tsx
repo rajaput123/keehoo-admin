@@ -2,7 +2,6 @@ import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  LayoutDashboard,
   Tag,
   Search,
   Bell,
@@ -29,8 +28,7 @@ import {
 import { cn } from "@/lib/utils";
 
 const sidebarItems = [
-  { label: "Overview", icon: LayoutDashboard, path: "/pricing/overview", description: "View all pricing plans" },
-  { label: "Plan Management", icon: Tag, path: "/pricing/plans", description: "Create and manage plans" },
+  { label: "Plans & Pricing", icon: Tag, path: "/pricing/overview", description: "Manage all pricing plans" },
 ];
 
 const PricingLayout = () => {
@@ -204,7 +202,7 @@ const PricingLayout = () => {
       </button>
 
       {/* Main Content */}
-      <main 
+      <main
         className={cn(
           "flex-1 transition-all duration-300",
           collapsed ? "ml-16" : "ml-60"

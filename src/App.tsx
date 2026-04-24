@@ -3,7 +3,6 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
 import Hub from "./pages/Hub";
 import Profile from "./pages/Profile";
@@ -53,8 +52,8 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <Routes>
-            {/* Landing & Auth Routes */}
-            <Route path="/" element={<LandingPage />} />
+            {/* Auth Routes */}
+            <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="/login" element={<Login />} />
 
             {/* Keehoo Admin Hub */}
