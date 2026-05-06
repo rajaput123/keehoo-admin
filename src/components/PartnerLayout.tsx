@@ -2,7 +2,9 @@ import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Tag,
+  LayoutDashboard,
+  Users,
+  DollarSign,
   Search,
   Bell,
   LogOut,
@@ -10,7 +12,8 @@ import {
   PanelLeftOpen,
   Settings,
   HelpCircle,
-  Users,
+  Handshake,
+  CreditCard,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
@@ -29,11 +32,14 @@ import {
 import { cn } from "@/lib/utils";
 
 const sidebarItems = [
-  { label: "Plans", icon: Tag, path: "/pricing/overview", description: "Manage all pricing plans" },
-  { label: "Subscriptions", icon: Users, path: "/pricing/subscriptions", description: "View all active/expired subscriptions" },
+  { label: "Overview", icon: LayoutDashboard, path: "/partner/overview", description: "Partner ecosystem dashboard and metrics", soon: true },
+  { label: "Partners", icon: Users, path: "/partner/management", description: "Review, approve, and manage partners" },
+  { label: "Mapping", icon: Handshake, path: "/partner/temples", description: "Temple mapping with partner assignments" },
+  { label: "Commissions", icon: DollarSign, path: "/partner/commissions", description: "Commission templates and partner assignments" },
+  { label: "Payouts", icon: CreditCard, path: "/partner/payouts", description: "Monthly referral payout management" },
 ];
 
-const PricingLayout = () => {
+const PartnerLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
@@ -114,7 +120,12 @@ const PricingLayout = () => {
                 )}
               >
                 <item.icon className="h-4 w-4 shrink-0" />
-                {!collapsed && <span>{item.label}</span>}
+                {!collapsed && (
+                  <div className="flex items-center gap-2">
+                    <span>{item.label}</span>
+                    {item.soon && <span className="text-xs font-semibold text-orange-600">SOON</span>}
+                  </div>
+                )}
               </button>
             );
 
@@ -216,4 +227,4 @@ const PricingLayout = () => {
   );
 };
 
-export default PricingLayout;
+export default PartnerLayout;

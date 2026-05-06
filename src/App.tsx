@@ -22,14 +22,6 @@ import RegistrationPipeline from "./pages/onboarding/RegistrationPipeline";
 import DirectOnboarding from "./pages/onboarding/DirectOnboarding";
 
 import ApprovalLogs from "./pages/onboarding/ApprovalLogs";
-import TenantLayout from "./components/TenantLayout";
-import TenantOverview from "./pages/tenant/Overview";
-import AllTenants from "./pages/tenant/AllTenants";
-import SubscriptionPlans from "./pages/tenant/SubscriptionPlans";
-import UsageMonitoring from "./pages/tenant/UsageMonitoring";
-import SuspensionCompliance from "./pages/tenant/SuspensionCompliance";
-import RegionManagement from "./pages/tenant/RegionManagement";
-import TenantLogs from "./pages/tenant/TenantLogs";
 import DevoteeLayout from "./components/DevoteeLayout";
 import DevoteeOverview from "./pages/devotee/Overview";
 import AllDevotees from "./pages/devotee/AllDevotees";
@@ -37,10 +29,19 @@ import DevoteeDetail from "./pages/devotee/DevoteeDetail";
 import DevoteeAnalytics from "./pages/devotee/Analytics";
 import PricingLayout from "./components/PricingLayout";
 import PricingOverview from "./pages/pricing/Overview";
+import PricingSubscriptions from "./pages/pricing/Subscriptions";
 import FreelancerLayout from "./components/FreelancerLayout";
 import FreelancerAccounts from "./pages/freelancer/Accounts";
 import FreelancerAccountDetails from "./pages/freelancer/AccountDetails";
+import PartnerLayout from "./components/PartnerLayout";
+import PartnerOverview from "./pages/partner/Overview";
+import PartnerManagement from "./pages/partner/Management";
+import PartnerProfile from "./pages/partner/Profile";
+import PartnerCommissions from "./pages/partner/Commissions";
+import PartnerTemples from "./pages/partner/Temples";
+import AgentPayouts from "./pages/partner/AgentPayouts";
 import NotFound from "./pages/NotFound";
+import { GlobalNotes } from "./components/GlobalNotes";
 
 const queryClient = new QueryClient();
 
@@ -84,18 +85,6 @@ const App = () => {
               <Route path="approval-logs" element={<ApprovalLogs />} />
             </Route>
 
-            {/* Domain: Tenants */}
-            <Route path="/domain/tenants" element={<TenantLayout />}>
-              <Route index element={<Navigate to="overview" replace />} />
-              <Route path="overview" element={<TenantOverview />} />
-              <Route path="all" element={<AllTenants />} />
-              <Route path="plans" element={<SubscriptionPlans />} />
-              <Route path="usage" element={<UsageMonitoring />} />
-              <Route path="suspension" element={<SuspensionCompliance />} />
-              <Route path="regions" element={<RegionManagement />} />
-              <Route path="logs" element={<TenantLogs />} />
-            </Route>
-
             {/* Devotee Management */}
             <Route path="/devotee" element={<DevoteeLayout />}>
               <Route index element={<Navigate to="overview" replace />} />
@@ -109,6 +98,7 @@ const App = () => {
             <Route path="/pricing" element={<PricingLayout />}>
               <Route index element={<Navigate to="overview" replace />} />
               <Route path="overview" element={<PricingOverview />} />
+              <Route path="subscriptions" element={<PricingSubscriptions />} />
             </Route>
 
             <Route path="/domain/freelancer" element={<FreelancerLayout />}>
@@ -117,8 +107,20 @@ const App = () => {
               <Route path="account-details" element={<FreelancerAccountDetails />} />
             </Route>
 
+            {/* Partner Management */}
+            <Route path="/partner" element={<PartnerLayout />}>
+              <Route index element={<Navigate to="overview" replace />} />
+                <Route path="overview" element={<PartnerOverview />} />
+              <Route path="management" element={<PartnerManagement />} />
+              <Route path="profile/:id" element={<PartnerProfile />} />
+              <Route path="commissions" element={<PartnerCommissions />} />
+              <Route path="temples" element={<PartnerTemples />} />
+              <Route path="payouts" element={<AgentPayouts />} />
+            </Route>
+
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <GlobalNotes />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>

@@ -12,6 +12,7 @@ import {
   User,
   Settings,
   HelpCircle,
+  Handshake,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -45,14 +46,6 @@ const domains = [
     description: "Temple registration, verification, and tenant creation workflows",
   },
   {
-    id: "tenants",
-    title: "Tenants",
-    icon: Users,
-    status: "Active",
-    path: "/domain/tenants/overview",
-    description: "Manage active temple SaaS accounts, subscriptions, and usage",
-  },
-  {
     id: "devotee",
     title: "Devotee",
     icon: Heart,
@@ -75,6 +68,14 @@ const domains = [
     status: "Active",
     path: "/pricing/overview",
     description: "Configure pricing plans and billing models",
+  },
+  {
+    id: "partner",
+    title: "Partner",
+    icon: Handshake,
+    status: "Active",
+    path: "/partner/overview",
+    description: "Manage partner ecosystem, commissions, and targets",
   },
 ];
 
